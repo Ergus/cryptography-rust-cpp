@@ -105,11 +105,20 @@ fn sha256(message: &str) -> [u8; 32] {
     hash
 }
 
-// Example usage
-fn main() {
-    let message = "hello world";
+#[cfg(test)]
+mod test_sha256 {
 
-    let hash = sha256(message);
+    use super::*;
 
-    println!("SHA-256: {:02x?}", hash.iter().collect::<Vec<_>>());
+    #[test]
+    fn hello_world() {
+
+        let hash = sha256("hello world");
+
+        assert_eq!(hash, [0xb9, 0x4d, 0x27, 0xb9, 0x93, 0x4d,
+            0x3e, 0x08, 0xa5, 0x2e, 0x52, 0xd7,
+            0xda, 0x7d, 0xab, 0xfa, 0xc4, 0x84,
+            0xef, 0xe3, 0x7a, 0x53, 0x80, 0xee,
+            0x90, 0x88, 0xf7, 0xac, 0xe2, 0xef, 0xcd, 0xe9]);
+    }
 }
