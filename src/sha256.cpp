@@ -4,6 +4,9 @@
 #include <vector>
 #include <string>
 
+#include <iostream>
+#include <bitset>
+
 // SHA-256 constants
 static constexpr std::array<uint32_t, 64> K = {
     0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
@@ -65,10 +68,12 @@ std::array<uint8_t, 32> sha256(const std::string &message) {
         uint32_t W[64];
 
         for (int i = 0; i < 16; i++) {
-            W[i] = (padded_message[chunk + 4 * i] << 24) |
-                   (padded_message[chunk + 4 * i + 1] << 16) |
-                   (padded_message[chunk + 4 * i + 2] << 8) |
-                   (padded_message[chunk + 4 * i + 3]);
+			uint8_t* tmp = reinterpret_cast<uint8_t *>(&W[i]);
+
+			tmp[0] = padded_message[chunk + 4 * i + 3];
+			tmp[1] = padded_message[chunk + 4 * i + 2];
+			tmp[2] = padded_message[chunk + 4 * i + 1];
+			tmp[3] = padded_message[chunk + 4 * i];
         }
 
         for (int i = 16; i < 64; i++) {
@@ -103,10 +108,12 @@ std::array<uint8_t, 32> sha256(const std::string &message) {
 	std::array<uint8_t, 32> hash;
 
     for (int i = 0; i < 8; i++) {
-        hash[4 * i] = (H[i] >> 24) & 0xFF;
-        hash[4 * i + 1] = (H[i] >> 16) & 0xFF;
-        hash[4 * i + 2] = (H[i] >> 8) & 0xFF;
-        hash[4 * i + 3] = H[i] & 0xFF;
+		const uint8_t* tmp = reinterpret_cast<const uint8_t *>(&H[i]);
+
+        hash[4 * i] = tmp[3];
+        hash[4 * i + 1] = tmp[2];
+        hash[4 * i + 2] = tmp[1];
+        hash[4 * i + 3] = tmp[0];
     }
 
 	return hash;
