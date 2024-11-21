@@ -1,5 +1,18 @@
 use std::convert::TryInto;
 
+use cxx::let_cxx_string;
+
+#[allow(unused_imports)]
+#[cxx::bridge]
+mod ffi {
+    unsafe extern "C++" {
+	include!("rust-sha256/include/sha256.h");
+
+    	#[cxx_name = "sha256"]
+        fn sha256_cxx(key: &CxxString) -> [u8; 32];
+    }
+}
+
 // SHA-256 constants
 const K: [u32; 64] = [
     0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
@@ -111,7 +124,7 @@ mod test_sha256 {
     use super::*;
 
     #[test]
-    fn hello_world() {
+    fn hello_world_rust() {
 
         let hash = sha256("hello world");
 
@@ -121,4 +134,20 @@ mod test_sha256 {
             0xef, 0xe3, 0x7a, 0x53, 0x80, 0xee,
             0x90, 0x88, 0xf7, 0xac, 0xe2, 0xef, 0xcd, 0xe9]);
     }
+
+
+    #[test]
+    fn hello_world_cxx() {
+
+        let_cxx_string!(greet = "hello world");
+
+        let hash = ffi::sha256_cxx(&greet);
+
+        assert_eq!(hash, [0xb9, 0x4d, 0x27, 0xb9, 0x93, 0x4d,
+            0x3e, 0x08, 0xa5, 0x2e, 0x52, 0xd7,
+            0xda, 0x7d, 0xab, 0xfa, 0xc4, 0x84,
+            0xef, 0xe3, 0x7a, 0x53, 0x80, 0xee,
+            0x90, 0x88, 0xf7, 0xac, 0xe2, 0xef, 0xcd, 0xe9]);
+    }
+
 }
