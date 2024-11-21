@@ -1,15 +1,19 @@
 #pragma once
 
 #include <array>
-#include <vector>
-#include <string>
+#include <span>
 #include <cstdint>
+#include <vector>
+
+#include "rust/cxx.h"
 
 // Padding and preprocessing
-std::vector<uint8_t> pad_message(const std::string &message);
+std::vector<uint8_t> pad_message(const std::span<const uint8_t> &message);
 
 // SHA-256 computation
-std::array<uint8_t, 32> sha256(const std::string &message);
+std::array<uint8_t, 32> sha256(const std::span<const uint8_t> &message);
+
+std::array<uint8_t, 32> sha256_wrapper(rust::Slice<const uint8_t> message);
 
 /* // Example usage */
 /* int main() { */

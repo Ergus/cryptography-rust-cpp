@@ -3,9 +3,9 @@
 #include <array>
 #include <vector>
 #include <string>
+#include <span>
 
-#include <iostream>
-#include <bitset>
+#include "rust/cxx.h"
 
 // SHA-256 constants
 static constexpr std::array<uint32_t, 64> K = {
@@ -37,7 +37,7 @@ constexpr uint32_t maj(uint32_t x, uint32_t y, uint32_t z)
 }
 
 
-std::vector<uint8_t> pad_message(const std::string &message)
+std::vector<uint8_t> pad_message(const std::span<const uint8_t> &message)
 {
 	const size_t size = message.size();
 	const size_t bit_len = size * 8;                     // Convert length to bits
@@ -55,7 +55,7 @@ std::vector<uint8_t> pad_message(const std::string &message)
 }
 
 // SHA-256 computation
-std::array<uint8_t, 32> sha256(const std::string &message) {
+std::array<uint8_t, 32> sha256(const std::span<const uint8_t> &message) {
 
     std::vector<uint8_t> padded_message = pad_message(message);
 
@@ -89,8 +89,9 @@ std::array<uint8_t, 32> sha256(const std::string &message) {
 			const uint32_t sigma0 = (rotr(H2[0], 2) ^ rotr(H2[0], 13) ^ rotr(H2[0], 22));
 			const uint32_t sigma1 = (rotr(H2[4], 6) ^ rotr(H2[4], 11) ^ rotr(H2[4], 25));
 
-            uint32_t T1 = (H2[7] + sigma1 + ch(H2[4], H2[5], H2[6]) + K[i] + W[i]) & 0xFFFFFFFF;
-            uint32_t T2 = (sigma0 + maj(H2[0], H2[1], H2[2])) & 0xFFFFFFFF;
+            const uint32_t T1 = (H2[7] + sigma1 + ch(H2[4], H2[5], H2[6]) + K[i] + W[i]) & 0xFFFFFFFF;
+            const uint32_t T2 = (sigma0 + maj(H2[0], H2[1], H2[2])) & 0xFFFFFFFF;
+
 			H2[7] = H2[6];
 			H2[6] = H2[5];
 			H2[5] = H2[4];
@@ -117,4 +118,11 @@ std::array<uint8_t, 32> sha256(const std::string &message) {
     }
 
 	return hash;
+}
+
+// Wrapper for Rust that uses rust::Slice
+std::array<uint8_t, 32> sha256_wrapper(rust::Slice<const uint8_t> message) {
+    // Convert rust::Slice to std::span
+    std::span<const uint8_t> span{message.data(), message.size()};
+    return sha256(span);
 }
