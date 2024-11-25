@@ -1,2 +1,2 @@
 mod sha256;
-mod bridge;
+mod bridge_sha256;
