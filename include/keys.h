@@ -9,7 +9,7 @@
 // Public Key: (84425eb8e32205a5f28c00a8fbe835b8ac95aebfa7342f53511b852c17df4763, a2c1e9543181086806617c6d5fc1002e3d092cea8bd7f1cdb34980aaf7c76102)
 
 struct Point {
-	std::string x, y;
+	rust::String x, y;
 };
 
 class EllipticCurve {
@@ -60,7 +60,7 @@ public:
 	) const {
         mpz_class min_val(static_cast<std::string>(min));
         mpz_class max_val(static_cast<std::string>(max));
-        mpz_class private_key = generatePrivateKey(min_val, max_val, seed);
+        mpz_class private_key = generatePrivateKey(min_val, max_val - 1, seed);
         return private_key.get_str(); // Convert mpz_class to string
     }
 
@@ -89,5 +89,5 @@ inline std::unique_ptr<EllipticCurve> mynew(
 		mpz_class(static_cast<std::string>(a)),
 		mpz_class(static_cast<std::string>(b)),
 		mpz_class(static_cast<std::string>(n)),
-		std::make_pair<mpz_class, mpz_class>(mpz_class(G.x), mpz_class(G.y)));
+		std::make_pair<mpz_class, mpz_class>(mpz_class(static_cast<std::string>(G.x)), mpz_class(static_cast<std::string>(G.y))));
 }
