@@ -3,6 +3,7 @@
 
 #[cxx::bridge]
 mod ffi {
+    #[derive(Debug)]
     struct RustPoint {
         x: String,
         y: String,
@@ -18,8 +19,8 @@ mod ffi {
     #[cxx_name = "Point"]
     type RustPoint;
 
-
-    fn mynew(
+    #[cxx_name = "mynew"]
+    fn new(
         p: &str,
         a: &str,
         b: &str,
@@ -27,7 +28,7 @@ mod ffi {
         G: RustPoint
     ) -> UniquePtr<EllipticCurve>;
 
-    fn generatePrivateKey2(
+    fn generatePrivateKey(
         self: &EllipticCurve,
         min: &str,
         max: &str,
@@ -35,7 +36,7 @@ mod ffi {
     ) -> String;
 
     /// Generate a public key given a private key.
-    fn generatePublicKey2(
+    fn generatePublicKey(
         self: &EllipticCurve,
         private_key: &str
     ) -> RustPoint;
@@ -60,9 +61,14 @@ mod test_keys {
             y: "0x483ADA7726A3C4655DA4FBFC0E1108A8FD17B448A68554199C47D08FFB10D4B8".to_string()
         };
 
-        let curve = ffi::mynew(p, a, b, n, g);
+        let curve = ffi::new(p, a, b, n, g);
 
 
-        let _private_key = curve.generatePrivateKey2("1", n, 5);
+        let private_key: String = curve.generatePrivateKey("1", n, 5);
+
+        let public_key = curve.generatePublicKey(&private_key);
+
+        println!("Private key: {}", private_key);
+        println!("Public key: {:?}", public_key);
     }
 }

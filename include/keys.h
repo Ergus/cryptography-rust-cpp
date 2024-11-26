@@ -53,7 +53,7 @@ public:
 	) const;
 
 
-	inline rust::String generatePrivateKey2(
+	inline rust::String generatePrivateKey(
 		const rust::Str min,
 		const rust::Str max,
 		unsigned long seed
@@ -64,7 +64,7 @@ public:
         return private_key.get_str(); // Convert mpz_class to string
     }
 
-    Point generatePublicKey2(
+    Point generatePublicKey(
 		const rust::Str private_key
 	) const {
         mpz_class priv_key(static_cast<std::string>(private_key));

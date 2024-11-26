@@ -5,6 +5,11 @@ edition = "2021"
 
 [dependencies]
 cxx = "1.0"
+# These are for the public-private key generation
+num-bigint = "0.4"
+num-traits = "0.2"
+rand = "0.8"
+
 
 [build-dependencies]
 cxx-build = "1.0"
