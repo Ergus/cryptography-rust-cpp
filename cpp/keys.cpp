@@ -22,12 +22,10 @@ std::pair<mpz_class, mpz_class> EllipticCurve::addPoints(
 	return { (x_r + p) % p, (y_r + p) % p };
 }
 
-mpz_class EllipticCurve::generatePrivateKey(
-	const mpz_class& min,
-	const mpz_class& max
-) const {
-    // Generate a random number in the range [min, max]
-    return min + rng.get_z_range(max - min + 1);
+mpz_class EllipticCurve::generatePrivateKey() const
+{
+    // Generate a random number in the range [1, n]
+    return 1 + rng.get_z_range(n - 1);
 }
 
 std::pair<mpz_class, mpz_class> EllipticCurve::generatePublicKey(

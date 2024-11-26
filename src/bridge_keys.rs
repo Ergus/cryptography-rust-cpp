@@ -29,10 +29,9 @@ mod ffi {
         seed: u64
     ) -> UniquePtr<EllipticCurve>;
 
+    #[cxx_name = "generatePrivateKeyRust"]
     fn generatePrivateKey(
         self: &EllipticCurve,
-        min: &str,
-        max: &str,
     ) -> String;
 
     /// Generate a public key given a private key.
@@ -64,7 +63,7 @@ mod test_keys {
         let curve = ffi::new(p, a, b, n, g, 5);
 
 
-        let private_key: String = curve.generatePrivateKey("1", n);
+        let private_key: String = curve.generatePrivateKey();
 
         let public_key = curve.generatePublicKey(&private_key);
 

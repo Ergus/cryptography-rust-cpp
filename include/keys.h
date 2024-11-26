@@ -47,29 +47,20 @@ public:
 		rng.seed(seed);
 	}
 
-	mpz_class generatePrivateKey(
-		const mpz_class& min,
-		const mpz_class& max
-	) const;
+	mpz_class generatePrivateKey() const;
 
     std::pair<mpz_class, mpz_class> generatePublicKey(
 		mpz_class privateKey
 	) const;
 
 
-	inline rust::String generatePrivateKey(
-		const rust::Str min,
-		const rust::Str max
-	) const {
-        mpz_class min_val(static_cast<std::string>(min));
-        mpz_class max_val(static_cast<std::string>(max));
-        mpz_class private_key = generatePrivateKey(min_val, max_val - 1);
-        return private_key.get_str(); // Convert mpz_class to string
+	inline rust::String generatePrivateKeyRust() const
+	{
+        return generatePrivateKey().get_str();
     }
 
-    Point generatePublicKey(
-		const rust::Str private_key
-	) const {
+    Point generatePublicKey(const rust::Str private_key) const
+	{
         mpz_class priv_key(static_cast<std::string>(private_key));
         auto public_key = generatePublicKey(priv_key);
         return {public_key.first.get_str(), public_key.second.get_str()}; // Convert points to string

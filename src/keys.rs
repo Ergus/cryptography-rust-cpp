@@ -10,6 +10,7 @@ struct EllipticCurve {
     b: BigInt,                     // Curve coefficient b
     n: BigInt,                     // Order of the curve
     g: (BigInt, BigInt),          // Generator point (x, y)
+    rng: rand::rngs::ThreadRng,
 }
 
 impl EllipticCurve {
@@ -37,9 +38,8 @@ impl EllipticCurve {
     }
 
     /// Generate a random number within a range
-    pub fn generate_private_key(min: &BigInt, max: &BigInt) -> BigInt {
-        let mut rng = rand::thread_rng();
-        rng.gen_bigint_range(min, &(max - BigInt::one()))
+    pub fn generate_private_key(&mut self) -> BigInt {
+        self.rng.gen_bigint_range(&BigInt::one(), &(self.n.clone() - BigInt::one()))
     }
 
    /// Perform scalar multiplication on the elliptic curve
@@ -84,10 +84,10 @@ mod test_keys {
         BigInt::from_str_radix("483ADA7726A3C4655DA4FBFC0E1108A8FD17B448A68554199C47D08FFB10D4B8", 16).unwrap(),
         );
 
-        let curve = EllipticCurve { p, a, b, n, g };
+        let mut curve = EllipticCurve { p, a, b, n, g, rng: rand::thread_rng() };
 
         // Generate a private key
-        let private_key = EllipticCurve::generate_private_key(&BigInt::one(), &curve.n);
+        let private_key = curve.generate_private_key();
         println!("Private Key: 0x{}", private_key.to_str_radix(16));
 
         // Generate a public key
