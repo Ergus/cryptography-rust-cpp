@@ -6,7 +6,7 @@ edition = "2021"
 [dependencies]
 cxx = "1.0"
 # These are for the public-private key generation
-num-bigint = "0.4"
+num-bigint = { version = "0.4", features = ["rand"] }
 num-traits = "0.2"
 rand = "0.8"
 
