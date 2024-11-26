@@ -25,14 +25,14 @@ mod ffi {
         a: &str,
         b: &str,
         n: &str,
-        G: RustPoint
+        G: RustPoint,
+        seed: u64
     ) -> UniquePtr<EllipticCurve>;
 
     fn generatePrivateKey(
         self: &EllipticCurve,
         min: &str,
         max: &str,
-        seed: u64
     ) -> String;
 
     /// Generate a public key given a private key.
@@ -50,7 +50,7 @@ mod test_keys {
     //use cxx::let_cxx_string;
 
     #[test]
-    fn test_keys_string() {
+    fn test_keys_cxx() {
 
         let p: &str = "0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F";
         let a: &str = "0";
@@ -61,10 +61,10 @@ mod test_keys {
             y: "0x483ADA7726A3C4655DA4FBFC0E1108A8FD17B448A68554199C47D08FFB10D4B8".to_string()
         };
 
-        let curve = ffi::new(p, a, b, n, g);
+        let curve = ffi::new(p, a, b, n, g, 5);
 
 
-        let private_key: String = curve.generatePrivateKey("1", n, 5);
+        let private_key: String = curve.generatePrivateKey("1", n);
 
         let public_key = curve.generatePublicKey(&private_key);
 

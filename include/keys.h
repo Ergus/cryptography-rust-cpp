@@ -19,10 +19,11 @@ class EllipticCurve {
 	const mpz_class b; // Curve coefficient b
 	const mpz_class n; // Order of the curve
 	const std::pair<mpz_class, mpz_class> G; // Generator point
+	mutable gmp_randclass rng;
 
-	mpz_class modInverse(const mpz_class& x, const mpz_class& mod) const {
+	mpz_class modInverse(const mpz_class& x) const {
 		mpz_class inv;
-		int invertible = mpz_invert(inv.get_mpz_t(), x.get_mpz_t(), mod.get_mpz_t());
+		int invertible = mpz_invert(inv.get_mpz_t(), x.get_mpz_t(), p.get_mpz_t());
 		assert(invertible);
 		return inv;
 	}
@@ -39,14 +40,17 @@ public:
 		mpz_class a,
 		mpz_class b,
 		mpz_class n,
-		std::pair<mpz_class, mpz_class> G
-	);
+		std::pair<mpz_class, mpz_class> G,
+		unsigned long seed
+	) : p(p), a(a), b(b), n(n), G(G), rng(gmp_randinit_default)
+	{
+		rng.seed(seed);
+	}
 
-	static mpz_class generatePrivateKey(
+	mpz_class generatePrivateKey(
 		const mpz_class& min,
-		const mpz_class& max,
-		unsigned long seed = 0
-	);
+		const mpz_class& max
+	) const;
 
     std::pair<mpz_class, mpz_class> generatePublicKey(
 		mpz_class privateKey
@@ -55,12 +59,11 @@ public:
 
 	inline rust::String generatePrivateKey(
 		const rust::Str min,
-		const rust::Str max,
-		unsigned long seed
+		const rust::Str max
 	) const {
         mpz_class min_val(static_cast<std::string>(min));
         mpz_class max_val(static_cast<std::string>(max));
-        mpz_class private_key = generatePrivateKey(min_val, max_val - 1, seed);
+        mpz_class private_key = generatePrivateKey(min_val, max_val - 1);
         return private_key.get_str(); // Convert mpz_class to string
     }
 
@@ -82,12 +85,15 @@ inline std::unique_ptr<EllipticCurve> mynew(
         const rust::Str a,
         const rust::Str b,
         const rust::Str n,
-        const Point G
+        const Point G,
+		unsigned long seed
 ) {
 	return std::make_unique<EllipticCurve>(
 		mpz_class(static_cast<std::string>(p)),
 		mpz_class(static_cast<std::string>(a)),
 		mpz_class(static_cast<std::string>(b)),
 		mpz_class(static_cast<std::string>(n)),
-		std::make_pair<mpz_class, mpz_class>(mpz_class(static_cast<std::string>(G.x)), mpz_class(static_cast<std::string>(G.y))));
+		std::make_pair<mpz_class, mpz_class>(mpz_class(static_cast<std::string>(G.x)), mpz_class(static_cast<std::string>(G.y))),
+		seed
+	);
 }

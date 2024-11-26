@@ -2,45 +2,30 @@
 
 #include <random>
 #include <cassert>
-
+#include <iostream>
 // Private Key: e70686214fdd53e3d94704ad90015c324e130559fcdd5a1ef8a3e5a6d68d9079
-// Public Key: (84425eb8e32205a5f28c00a8fbe835b8ac95aebfa7342f53511b852c17df4763, a2c1e9543181086806617c6d5fc1002e3d092cea8bd7f1cdb34980aaf7c76102)
-
-EllipticCurve::EllipticCurve(
-	mpz_class p,
-	mpz_class a,
-	mpz_class b,
-	mpz_class n,
-	std::pair<mpz_class, mpz_class> G
-) : p(p), a(a), b(b), n(n), G(G)
-{}
+// Public Key: (84425eb8e32205a5f28c00a8fbe835b8ac95aebfa7342f53511b852c17df4763, a2c1e9543181086806617c6d5fc1002e3d092cea8bd7f1cdb34980aaf7c76102);
 
 std::pair<mpz_class, mpz_class> EllipticCurve::addPoints(
 	const std::pair<mpz_class, mpz_class>& P,
 	const std::pair<mpz_class, mpz_class>& Q
 ) const {
-	if (P == Q) {
-		mpz_class s = (3 * P.first * P.first + a) * modInverse(2 * P.second, p) % p;
-		mpz_class x_r = (s * s - 2 * P.first) % p;
-		mpz_class y_r = (s * (P.first - x_r) - P.second) % p;
-		return { (x_r + p) % p, (y_r + p) % p };
-	} else {
-		mpz_class s = (Q.second - P.second) * modInverse(Q.first - P.first, p) % p;
-		mpz_class x_r = (s * s - P.first - Q.first) % p;
-		mpz_class y_r = (s * (P.first - x_r) - P.second) % p;
-		return { (x_r + p) % p, (y_r + p) % p };
-	}
+	mpz_class s;
+
+	if (P == Q)
+		s = (3 * P.first * P.first + a) * modInverse(2 * P.second) % p;
+	else
+		s = (Q.second - P.second) * modInverse(Q.first - P.first) % p;
+
+	mpz_class x_r = (s * s - P.first - Q.first) % p;
+	mpz_class y_r = (s * (P.first - x_r) - P.second) % p;
+	return { (x_r + p) % p, (y_r + p) % p };
 }
 
 mpz_class EllipticCurve::generatePrivateKey(
 	const mpz_class& min,
-	const mpz_class& max,
-	unsigned long seed
-) {
-    // Initialize GMP random state
-    gmp_randclass rng(gmp_randinit_default);
-    rng.seed(seed);
-
+	const mpz_class& max
+) const {
     // Generate a random number in the range [min, max]
     return min + rng.get_z_range(max - min + 1);
 }
