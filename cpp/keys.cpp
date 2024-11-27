@@ -43,30 +43,3 @@ std::pair<mpz_class, mpz_class> EllipticCurve::generatePublicKey(
 	}
 	return result;
 }
-
-
-// int main()
-// {
-//     // SECP256k1 curve parameters
-//     mpz_class p("0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F");
-//     mpz_class a(0);
-//     mpz_class b(7);
-//     mpz_class n("0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141");
-//     std::pair<mpz_class, mpz_class> G(
-//         mpz_class("0x79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798"),
-//         mpz_class("0x483ADA7726A3C4655DA4FBFC0E1108A8FD17B448A68554199C47D08FFB10D4B8")
-//     );
-
-//     EllipticCurve curve(p, a, b, n, G);
-
-//     // Generate private key
-//     //mpz_class privateKey = generateRandomNumber(1, n - 1, std::random_device{}());
-// 	mpz_class privateKey = EllipticCurve::generateRandomNumber(1, n - 1, 5);
-//     std::cout << "Private Key: " << privateKey.get_str(16) << "\n";
-
-//     // Generate public key
-//     std::pair<mpz_class, mpz_class> publicKey = curve.scalarMult(privateKey, G);
-//     std::cout << "Public Key: (" << publicKey.first.get_str(16) << ", " << publicKey.second.get_str(16) << ")\n";
-
-//     return 0;
-// }
