@@ -5,13 +5,12 @@
 #include <cassert>
 #include <memory>
 
-// Private Key: e70686214fdd53e3d94704ad90015c324e130559fcdd5a1ef8a3e5a6d68d9079
-// Public Key: (84425eb8e32205a5f28c00a8fbe835b8ac95aebfa7342f53511b852c17df4763, a2c1e9543181086806617c6d5fc1002e3d092cea8bd7f1cdb34980aaf7c76102)
-
 struct Point {
 	rust::String x, y;
 };
 
+// Private Key: e70686214fdd53e3d94704ad90015c324e130559fcdd5a1ef8a3e5a6d68d9079
+// Public Key: (84425eb8e32205a5f28c00a8fbe835b8ac95aebfa7342f53511b852c17df4763, a2c1e9543181086806617c6d5fc1002e3d092cea8bd7f1cdb34980aaf7c76102)
 class EllipticCurve {
 
 	const mpz_class p; // Prime field
@@ -68,7 +67,9 @@ public:
 
 		while (privateKeyCopy > 0) {
 			if (privateKeyCopy % 2 == 1) {
-				result = (result.first == 0 && result.second == 0) ? temp : addPoints(result, temp);
+				result = (result.first == 0 && result.second == 0)
+					? temp
+					: addPoints(result, temp);
 			}
 			temp = addPoints(temp, temp);
 			privateKeyCopy /= two;
@@ -94,7 +95,7 @@ public:
         return generatePrivateKey().get_str();
     }
 
-    inline Point generatePublicKey(const rust::Str private_key) const
+    inline Point generatePublicKeyRust(const rust::Str private_key) const
 	{
         mpz_class priv_key(static_cast<std::string>(private_key));
         auto public_key = generatePublicKey(priv_key);
@@ -103,10 +104,9 @@ public:
 
 };
 
-
 // Functions wrappers for rust (needed to pass the values as strings)
 // Wrapper constructor for Rust
-inline std::unique_ptr<EllipticCurve> mynew(
+inline std::unique_ptr<EllipticCurve> EllipticCurveNewRust(
         const rust::Str p,
         const rust::Str a,
         const rust::Str b,
@@ -119,7 +119,10 @@ inline std::unique_ptr<EllipticCurve> mynew(
 		mpz_class(static_cast<std::string>(a)),
 		mpz_class(static_cast<std::string>(b)),
 		mpz_class(static_cast<std::string>(n)),
-		std::make_pair<mpz_class, mpz_class>(mpz_class(static_cast<std::string>(G.x)), mpz_class(static_cast<std::string>(G.y))),
+		std::make_pair<mpz_class, mpz_class>(
+			mpz_class(static_cast<std::string>(G.x)),
+			mpz_class(static_cast<std::string>(G.y))
+		),
 		seed
 	);
 }

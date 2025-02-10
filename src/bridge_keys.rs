@@ -19,7 +19,7 @@ mod ffi {
     #[cxx_name = "Point"]
     type RustPoint;
 
-    #[cxx_name = "mynew"]
+    #[cxx_name = "EllipticCurveNewRust"]
     fn new(
         p: &str,
         a: &str,
@@ -35,6 +35,7 @@ mod ffi {
     ) -> String;
 
     /// Generate a public key given a private key.
+    #[cxx_name = "generatePublicKeyRust"]
     fn generatePublicKey(
         self: &EllipticCurve,
         private_key: &str
