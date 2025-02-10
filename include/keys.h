@@ -29,6 +29,28 @@ class EllipticCurve {
 		return inv;
 	}
 
+	inline std::pair<mpz_class, mpz_class> scalarMult(
+		const std::pair<mpz_class, mpz_class>& P,
+		mpz_class privateKeyCopy
+	) const {
+		std::pair<mpz_class, mpz_class> result = {0, 0};
+		std::pair<mpz_class, mpz_class> temp = P;
+
+		mpz_class two(2);
+
+		while (privateKeyCopy > 0) {
+			if (privateKeyCopy % 2 == 1) {
+				result = (result.first == 0 && result.second == 0)
+					? temp
+					: addPoints(result, temp);
+			}
+			temp = addPoints(temp, temp);
+			privateKeyCopy /= two;
+		}
+		return result;
+	}
+
+
 	inline std::pair<mpz_class, mpz_class> addPoints(
 		const std::pair<mpz_class, mpz_class>& P,
 		const std::pair<mpz_class, mpz_class>& Q
@@ -59,30 +81,10 @@ public:
 		rng.seed(seed);
 	}
 
-	inline std::pair<mpz_class, mpz_class> scalarMult(
-		mpz_class privateKeyCopy
-	) const {
-		std::pair<mpz_class, mpz_class> result = {0, 0};
-		std::pair<mpz_class, mpz_class> temp = G;
-
-		mpz_class two(2);
-
-		while (privateKeyCopy > 0) {
-			if (privateKeyCopy % 2 == 1) {
-				result = (result.first == 0 && result.second == 0)
-					? temp
-					: addPoints(result, temp);
-			}
-			temp = addPoints(temp, temp);
-			privateKeyCopy /= two;
-		}
-		return result;
-	}
-
 	inline std::pair<mpz_class, mpz_class> generatePublicKey(
 		const mpz_class &privateKey
 	) const {
-		return scalarMult(privateKey);
+		return scalarMult(G, privateKey);
 	}
 
 	inline mpz_class generatePrivateKey() const
