@@ -10,7 +10,8 @@ struct Point {
 };
 
 // Private Key: e70686214fdd53e3d94704ad90015c324e130559fcdd5a1ef8a3e5a6d68d9079
-// Public Key: (84425eb8e32205a5f28c00a8fbe835b8ac95aebfa7342f53511b852c17df4763, a2c1e9543181086806617c6d5fc1002e3d092cea8bd7f1cdb34980aaf7c76102)
+// Public Key: (84425eb8e32205a5f28c00a8fbe835b8ac95aebfa7342f53511b852c17df4763,
+//              a2c1e9543181086806617c6d5fc1002e3d092cea8bd7f1cdb34980aaf7c76102)
 class EllipticCurve {
 
 	const mpz_class p; // Prime field
@@ -20,9 +21,10 @@ class EllipticCurve {
 	const std::pair<mpz_class, mpz_class> G; // Generator point
 	mutable gmp_randclass rng;
 
-	inline mpz_class modInverse(const mpz_class& x) const {
+	inline mpz_class modInverse(const mpz_class& a, const mpz_class& m) const
+	{
 		mpz_class inv;
-		int invertible = mpz_invert(inv.get_mpz_t(), x.get_mpz_t(), p.get_mpz_t());
+		int invertible = mpz_invert(inv.get_mpz_t(), a.get_mpz_t(), m.get_mpz_t());
 		assert(invertible);
 		return inv;
 	}
@@ -34,9 +36,9 @@ class EllipticCurve {
 		mpz_class s;
 
 		if (P == Q)
-			s = (3 * P.first * P.first + a) * modInverse(2 * P.second) % p;
+			s = (3 * P.first * P.first + a) * modInverse(2 * P.second, p) % p;
 		else
-			s = (Q.second - P.second) * modInverse(Q.first - P.first) % p;
+			s = (Q.second - P.second) * modInverse(Q.first - P.first, p) % p;
 
 		mpz_class x_r = (s * s - P.first - Q.first) % p;
 		mpz_class y_r = (s * (P.first - x_r) - P.second) % p;
