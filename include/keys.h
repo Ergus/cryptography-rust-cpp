@@ -31,7 +31,18 @@ class EllipticCurve {
 	std::pair<mpz_class, mpz_class> addPoints(
 		const std::pair<mpz_class, mpz_class>& P,
 		const std::pair<mpz_class, mpz_class>& Q
-	) const;
+	) const {
+		mpz_class s;
+
+		if (P == Q)
+			s = (3 * P.first * P.first + a) * modInverse(2 * P.second) % p;
+		else
+			s = (Q.second - P.second) * modInverse(Q.first - P.first) % p;
+
+		mpz_class x_r = (s * s - P.first - Q.first) % p;
+		mpz_class y_r = (s * (P.first - x_r) - P.second) % p;
+		return { (x_r + p) % p, (y_r + p) % p };
+	}
 
 public:
 
@@ -48,8 +59,22 @@ public:
 	}
 
 	std::pair<mpz_class, mpz_class> scalarMult(
-		mpz_class privateKey
-	) const;
+		mpz_class privateKeyCopy
+	) const {
+		std::pair<mpz_class, mpz_class> result = {0, 0};
+		std::pair<mpz_class, mpz_class> temp = G;
+
+		mpz_class two(2);
+
+		while (privateKeyCopy > 0) {
+			if (privateKeyCopy % 2 == 1) {
+				result = (result.first == 0 && result.second == 0) ? temp : addPoints(result, temp);
+			}
+			temp = addPoints(temp, temp);
+			privateKeyCopy /= two;
+		}
+		return result;
+	}
 
 	inline std::pair<mpz_class, mpz_class> generatePublicKey(
 		const mpz_class &privateKey
@@ -57,7 +82,11 @@ public:
 		return scalarMult(privateKey);
 	}
 
-	mpz_class generatePrivateKey() const;
+	mpz_class generatePrivateKey() const
+	{
+		// Generate a random number in the range [1, n]
+		return 1 + rng.get_z_range(n - 1);
+	}
 
 	// Rust functions
 	inline rust::String generatePrivateKeyRust() const

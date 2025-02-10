@@ -13,7 +13,6 @@ fn main() {
 
     // key pairs code
     cxx_build::bridge("src/bridge_keys.rs")
-        .file("cpp/keys.cpp")
         .flag_if_supported("-std=c++20")
         .compile("cxx-keys");
 
