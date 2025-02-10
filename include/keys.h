@@ -4,6 +4,7 @@
 #include "rust/cxx.h"
 #include <cassert>
 #include <memory>
+#include "sha256.h"
 
 struct Point {
 	rust::String x, y;
@@ -67,6 +68,47 @@ class EllipticCurve {
 		return { (x_r + p) % p, (y_r + p) % p };
 	}
 
+	mpz_class hashMessage(const std::string& message) const
+	{
+		std::array<uint8_t, 32> hash = sha256(std::span((uint8_t *)message.data(), message.size()));
+		return mpz_class(std::string(reinterpret_cast<char*>(hash.data()), 32), 16);
+	}
+
+	// ECDSA Signing
+	std::pair<mpz_class, mpz_class> signMessage(
+		const std::string& message,
+		mpz_class privateKeyCopy
+	) const {
+		mpz_class z = EllipticCurve::hashMessage(message);
+
+		mpz_class k = generatePrivateKey();
+		std::pair<mpz_class, mpz_class> R = generatePublicKey(k);
+
+		mpz_class r = R.first % n ;
+		mpz_class s = (modInverse(k, n) * (z + r * privateKeyCopy)) % n;
+		return {r, s};
+	}
+
+	// ECDSA Verification
+	bool verifySignature(
+		const std::string& message,
+		const std::pair<mpz_class, mpz_class>& signature,
+		const std::pair<mpz_class, mpz_class>& publicKey
+	) const {
+		mpz_class z = hashMessage(message);
+
+		mpz_class w = modInverse(signature.second, n);
+
+		mpz_class u1 = (z * w) % n;
+		mpz_class u2 = (signature.first * w) % n;
+
+		std::pair<mpz_class, mpz_class> P1 = EllipticCurve::scalarMult(G, u1);
+		std::pair<mpz_class, mpz_class> P2 = EllipticCurve::scalarMult(publicKey, u2);
+		std::pair<mpz_class, mpz_class> P = addPoints(P1, P2);
+
+		return P.first % n == signature.first;
+	}
+
 public:
 
 	inline EllipticCurve(
@@ -107,6 +149,7 @@ public:
     }
 
 };
+
 
 // Functions wrappers for rust (needed to pass the values as strings)
 // Wrapper constructor for Rust
