@@ -47,13 +47,19 @@ public:
 		rng.seed(seed);
 	}
 
-	mpz_class generatePrivateKey() const;
-
-    std::pair<mpz_class, mpz_class> generatePublicKey(
+	std::pair<mpz_class, mpz_class> scalarMult(
 		mpz_class privateKey
 	) const;
 
+	inline std::pair<mpz_class, mpz_class> generatePublicKey(
+		const mpz_class &privateKey
+	) const {
+		return scalarMult(privateKey);
+	}
 
+	mpz_class generatePrivateKey() const;
+
+	// Rust functions
 	inline rust::String generatePrivateKeyRust() const
 	{
         return generatePrivateKey().get_str();
@@ -88,3 +94,5 @@ inline std::unique_ptr<EllipticCurve> mynew(
 		seed
 	);
 }
+
+

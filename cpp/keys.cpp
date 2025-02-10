@@ -28,18 +28,20 @@ mpz_class EllipticCurve::generatePrivateKey() const
     return 1 + rng.get_z_range(n - 1);
 }
 
-std::pair<mpz_class, mpz_class> EllipticCurve::generatePublicKey(
-	mpz_class privateKey
+std::pair<mpz_class, mpz_class> EllipticCurve::scalarMult(
+	mpz_class privateKeyCopy
 ) const {
 	std::pair<mpz_class, mpz_class> result = {0, 0};
 	std::pair<mpz_class, mpz_class> temp = G;
 
-	while (privateKey > 0) {
-		if (privateKey % 2 == 1) {
+	mpz_class two(2);
+
+	while (privateKeyCopy > 0) {
+		if (privateKeyCopy % 2 == 1) {
 			result = (result.first == 0 && result.second == 0) ? temp : addPoints(result, temp);
 		}
 		temp = addPoints(temp, temp);
-		privateKey /= 2;
+		privateKeyCopy /= two;
 	}
 	return result;
 }
