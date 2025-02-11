@@ -70,14 +70,14 @@ class EllipticCurve {
 
 	mpz_class hashMessage(const std::string& message) const
 	{
-		std::array<uint8_t, 32> hash = sha256(std::span((uint8_t *)message.data(), message.size()));
-		return mpz_class(std::string(reinterpret_cast<char*>(hash.data()), 32), 16);
+		std::string hash = sha256(message);
+		return mpz_class(hash, 16);
 	}
 
 	// ECDSA Signing
 	std::pair<mpz_class, mpz_class> signMessage(
 		const std::string& message,
-		mpz_class privateKeyCopy
+		const mpz_class &privateKey
 	) const {
 		mpz_class z = EllipticCurve::hashMessage(message);
 
@@ -85,7 +85,7 @@ class EllipticCurve {
 		std::pair<mpz_class, mpz_class> R = generatePublicKey(k);
 
 		mpz_class r = R.first % n ;
-		mpz_class s = (modInverse(k, n) * (z + r * privateKeyCopy)) % n;
+		mpz_class s = (modInverse(k, n) * (z + r * privateKey)) % n;
 		return {r, s};
 	}
 
@@ -148,6 +148,39 @@ public:
         return {public_key.first.get_str(), public_key.second.get_str()}; // Convert points to string
     }
 
+	inline Point signMessageRust(
+		const rust::Str message,
+		const rust::Str private_key
+	) const {
+		mpz_class priv_key(static_cast<std::string>(private_key));
+
+		std::pair<mpz_class, mpz_class> signature = signMessage(
+			static_cast<std::string>(message),
+			std::move(priv_key)
+		);
+
+		return {signature.first.get_str(), signature.second.get_str()}; // Convert fignature to string
+	}
+
+	// ECDSA Verification
+	bool verifySignatureRust(
+		const rust::Str message,
+		const Point& signature,
+		const Point& publicKey
+	) const {
+
+		std::pair<mpz_class, mpz_class> sig {
+			mpz_class(static_cast<std::string>(signature.x)),
+			mpz_class(static_cast<std::string>(signature.y)),
+		};
+
+		std::pair<mpz_class, mpz_class> pub {
+			mpz_class(static_cast<std::string>(publicKey.x)),
+			mpz_class(static_cast<std::string>(publicKey.y)),
+		};
+
+		return verifySignature(static_cast<std::string>(message), sig, pub);
+	}
 };
 
 
