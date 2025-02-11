@@ -22,18 +22,22 @@ class EllipticCurve {
 	const std::pair<mpz_class, mpz_class> G; // Generator point
 	mutable gmp_randclass rng;
 
-	inline mpz_class modInverse(const mpz_class& a, const mpz_class& m) const
+	static inline mpz_class modInverse(const mpz_class& a, const mpz_class& m)
 	{
 		mpz_class inv;
 		int invertible = mpz_invert(inv.get_mpz_t(), a.get_mpz_t(), m.get_mpz_t());
 		assert(invertible);
+
 		return inv;
 	}
+
+	friend rust::String modInverseRust(const rust::Str a, const rust::Str m);
 
 	inline std::pair<mpz_class, mpz_class> scalarMult(
 		const std::pair<mpz_class, mpz_class>& P,
 		mpz_class privateKeyCopy
 	) const {
+
 		std::pair<mpz_class, mpz_class> result = {0, 0};
 		std::pair<mpz_class, mpz_class> temp = P;
 
@@ -48,6 +52,7 @@ class EllipticCurve {
 			temp = addPoints(temp, temp);
 			privateKeyCopy /= two;
 		}
+
 		return result;
 	}
 
@@ -56,16 +61,22 @@ class EllipticCurve {
 		const std::pair<mpz_class, mpz_class>& P,
 		const std::pair<mpz_class, mpz_class>& Q
 	) const {
+
 		mpz_class s;
 
-		if (P == Q)
+		if (P == Q) {
 			s = (3 * P.first * P.first + a) * modInverse(2 * P.second, p) % p;
-		else
-			s = (Q.second - P.second) * modInverse(Q.first - P.first, p) % p;
+		} else {
+			mpz_class modinv = modInverse(Q.first - P.first, p);
+			s = (Q.second - P.second) * modinv % p;
+		}
 
 		mpz_class x_r = (s * s - P.first - Q.first) % p;
 		mpz_class y_r = (s * (P.first - x_r) - P.second) % p;
-		return { (x_r + p) % p, (y_r + p) % p };
+
+		std::pair<mpz_class, mpz_class> result = { (x_r + p) % p, (y_r + p) % p };
+
+		return result;
 	}
 
 	mpz_class hashMessage(const std::string& message) const
@@ -95,6 +106,7 @@ class EllipticCurve {
 		const std::pair<mpz_class, mpz_class>& signature,
 		const std::pair<mpz_class, mpz_class>& publicKey
 	) const {
+
 		mpz_class z = hashMessage(message);
 
 		mpz_class w = modInverse(signature.second, n);
@@ -102,8 +114,9 @@ class EllipticCurve {
 		mpz_class u1 = (z * w) % n;
 		mpz_class u2 = (signature.first * w) % n;
 
-		std::pair<mpz_class, mpz_class> P1 = EllipticCurve::scalarMult(G, u1);
-		std::pair<mpz_class, mpz_class> P2 = EllipticCurve::scalarMult(publicKey, u2);
+		std::pair<mpz_class, mpz_class> P1 = scalarMult(G, u1);
+		std::pair<mpz_class, mpz_class> P2 = scalarMult(publicKey, u2);
+
 		std::pair<mpz_class, mpz_class> P = addPoints(P1, P2);
 
 		return P.first % n == signature.first;
@@ -135,7 +148,21 @@ public:
 		return 1 + rng.get_z_range(n - 1);
 	}
 
-	// Rust functions
+	// Rust functions ================================
+
+	inline Point scalarMultRust(const Point& P, rust::Str privateKey) const
+	{
+		std::pair<mpz_class, mpz_class> point {
+			mpz_class(static_cast<std::string>(P.x)),
+			mpz_class(static_cast<std::string>(P.y)),
+		};
+
+		mpz_class priv_key(static_cast<std::string>(privateKey));
+
+		auto mult = this->scalarMult(point, priv_key);
+		return {mult.first.get_str(), mult.second.get_str()}; // Convert points to string
+	}
+
 	inline rust::String generatePrivateKeyRust() const
 	{
         return generatePrivateKey().get_str();
@@ -207,4 +234,11 @@ inline std::unique_ptr<EllipticCurve> EllipticCurveNewRust(
 	);
 }
 
+inline rust::String modInverseRust(const rust::Str a, const rust::Str m)
+{
 
+	mpz_class mpz_a(static_cast<std::string>(a));
+	mpz_class mpz_m(static_cast<std::string>(m));
+
+	return EllipticCurve::modInverse(mpz_a, mpz_a).get_str();
+}

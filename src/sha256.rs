@@ -49,7 +49,7 @@ fn pad_message(message: &[u8]) -> Vec<u8> {
 }
 
 // SHA-256 computation
-fn sha256_rust_raw(message: &[u8]) -> [u8; 32]
+pub fn sha256_rust_raw(message: &[u8]) -> [u8; 32]
 {
     let padded_message = pad_message(message);
 
@@ -111,7 +111,7 @@ fn sha256_rust_raw(message: &[u8]) -> [u8; 32]
 }
 
 
-fn sha256_rust_str(message: &str) -> String
+pub fn sha256_rust_str(message: &str) -> String
 {
     let hash = sha256_rust_raw(message.as_bytes());
 
