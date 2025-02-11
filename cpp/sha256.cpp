@@ -56,7 +56,8 @@ std::vector<uint8_t> pad_message(const std::span<const uint8_t> &message)
 }
 
 // SHA-256 computation
-std::array<uint8_t, 32> sha256(const std::span<const uint8_t> &message) {
+std::array<uint8_t, 32> sha256(const std::span<const uint8_t> &message)
+{
 
 	const std::vector<uint8_t> padded_message = pad_message(message);
 
@@ -124,11 +125,4 @@ std::array<uint8_t, 32> sha256(const std::span<const uint8_t> &message) {
 	}
 
 	return hash;
-}
-
-// Wrapper for Rust that uses rust::Slice
-std::array<uint8_t, 32> sha256_wrapper(rust::Slice<const uint8_t> message) {
-	// Convert rust::Slice to std::span
-	std::span<const uint8_t> span{message.data(), message.size()};
-	return sha256(span);
 }
