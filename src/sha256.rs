@@ -49,7 +49,8 @@ fn pad_message(message: &[u8]) -> Vec<u8> {
 }
 
 // SHA-256 computation
-fn sha256_rust(message: &[u8]) -> [u8; 32] {
+fn sha256_rust_raw(message: &[u8]) -> [u8; 32]
+{
     let padded_message = pad_message(message);
 
     let mut h = [
@@ -109,20 +110,42 @@ fn sha256_rust(message: &[u8]) -> [u8; 32] {
     hash
 }
 
+
+fn sha256_rust_str(message: &str) -> String
+{
+    let hash = sha256_rust_raw(message.as_bytes());
+
+    let mut hex_string = String::with_capacity(hash.len() * 2);
+    for byte in hash {
+        hex_string.push_str(&format!("{:02x}", byte));
+    }
+
+    hex_string
+}
+
 #[cfg(test)]
 mod test_sha256 {
 
     use super::*;
 
     #[test]
-    fn hello_world_rust() {
+    fn hello_world_rust_raw()
+    {
 
-        let hash = sha256_rust("hello world".as_bytes());
+        let hash = sha256_rust_raw("hello world".as_bytes());
 
         assert_eq!(hash, [0xb9, 0x4d, 0x27, 0xb9, 0x93, 0x4d,
             0x3e, 0x08, 0xa5, 0x2e, 0x52, 0xd7,
             0xda, 0x7d, 0xab, 0xfa, 0xc4, 0x84,
             0xef, 0xe3, 0x7a, 0x53, 0x80, 0xee,
             0x90, 0x88, 0xf7, 0xac, 0xe2, 0xef, 0xcd, 0xe9]);
+    }
+
+
+    #[test]
+    fn hello_world_rust_str()
+    {
+        let hash = sha256_rust_str("hello world");
+        assert_eq!(hash, "b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9");
     }
 }
