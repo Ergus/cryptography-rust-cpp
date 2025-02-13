@@ -79,15 +79,10 @@ std::array<uint8_t, 32> sha256(const std::span<const uint8_t> &message)
 		}
 
 		for (int i = 16; i < 64; i++) {
-			const uint32_t Wi_16 = W[i - 16];
-			const uint32_t Wi_15 = W[i - 15];
-			const uint32_t Wi_7 = W[i - 7];
-			const uint32_t Wi_2 = W[i - 2];
+			const uint32_t sigma0 = (rotr(W[i - 15], 7) ^ rotr(W[i - 15], 18) ^ (W[i - 15] >> 3));
+			const uint32_t sigma1 = (rotr(W[i - 2], 17) ^ rotr(W[i - 2], 19) ^ (W[i - 2] >> 10));
 
-			const uint32_t sigma0 = (rotr(Wi_15, 7) ^ rotr(Wi_15, 18) ^ (Wi_15 >> 3));
-			const uint32_t sigma1 = (rotr(Wi_2, 17) ^ rotr(Wi_2, 19) ^ (Wi_2 >> 10));
-
-			W[i] = (Wi_16 + sigma0 + Wi_7 + sigma1) & 0xFFFFFFFF;
+			W[i] = (W[i - 16] + sigma0 + W[i - 7] + sigma1) & 0xFFFFFFFF;
 		}
 
 		std::array<uint32_t, 8> H2(H);
